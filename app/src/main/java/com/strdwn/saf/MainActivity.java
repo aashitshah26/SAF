@@ -14,8 +14,9 @@ public class MainActivity extends BaseActivity {
         requestMainFolderAccess("Aashit", new StorageCallbacks() {
             @Override
             public void onFolderAccessGranted(DocumentFile folder) {
-                folder.createDirectory("Aashit"+System.currentTimeMillis());
                 //This folder will give u access to your main folder. Do everything in this folder only.
+                folder.createDirectory("Aashit"+System.currentTimeMillis());
+
             }
         });
     }

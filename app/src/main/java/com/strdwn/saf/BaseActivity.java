@@ -56,7 +56,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                     AppSettingsDialog.Builder builder = new AppSettingsDialog.Builder(BaseActivity.this);
                     builder.build().show();
                 } else {
-                    Log.e("onPermissionsDenied", "hello else");
                     EasyPermissions.requestPermissions(BaseActivity.this, "Grant permission to use app!", STORAGE_PERMISSION, WRITE_EXTERNAL_STORAGE);
                 }
             }
@@ -75,10 +74,15 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public void requestMainFolderAccess(String name,StorageCallbacks callbacks){
        if (checkStorage()){
-//           DocumentFile main = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(GIVEN_SCOPE,"")));
            DocumentFile folder = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(FOLDER_URI,"")));
-           if (folder!=null && folder.getName().equals(name)){
+           if (folder!=null && folder.exists() && folder.getName().equals(name)){
                callbacks.onFolderAccessGranted(folder);
+           }else {
+               DocumentFile main = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(GIVEN_SCOPE,"")));
+               if (main!=null && main.exists()){
+                   folder = main.createDirectory(name);
+                   callbacks.onFolderAccessGranted(folder);
+               }
            }
        }else {
            if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
