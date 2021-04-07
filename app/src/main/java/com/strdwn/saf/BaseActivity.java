@@ -23,21 +23,20 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public abstract class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity {
 
-   SharedPreferences sharedPreferences;
-
-   private static String FOLDER_URI = "FOLDER_URI";
-   private static String GIVEN_SCOPE = "GIVEN_SCOPE";
+    private static String FOLDER_URI = "FOLDER_URI";
+    private static String GIVEN_SCOPE = "GIVEN_SCOPE";
     private final int REQUEST_CODE_PATH_TO_DATA = 54;
     private final int STORAGE_PERMISSION = 32;
     EasyPermissions.PermissionCallbacks permissionCallbacks;
     String requestName;
     StorageCallbacks callbacks;
+    SharedPreferences sharedPreferences;
 
-   public interface StorageCallbacks{
-       void onFolderAccessGranted(DocumentFile folder);
-   }
+    public interface StorageCallbacks{
+        void onFolderAccessGranted(DocumentFile folder);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,7 +64,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             }
         };
-        
+
     }
 
     public boolean checkStorage(){
@@ -73,52 +72,52 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public void requestMainFolderAccess(String name,StorageCallbacks callbacks){
-       if (checkStorage()){
-           DocumentFile folder = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(FOLDER_URI,"")));
-           if (folder!=null && folder.exists() && folder.getName().equals(name)){
-               callbacks.onFolderAccessGranted(folder);
-           }else {
-               DocumentFile main = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(GIVEN_SCOPE,"")));
-               if (main!=null && main.exists()){
-                   folder = main.createDirectory(name);
-                   callbacks.onFolderAccessGranted(folder);
-               }
-           }
-       }else {
-           if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
-               requestName = name;
-               this.callbacks = callbacks;
-               if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                   selectIfHavePermission();
-               } else {
-                   Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                   startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
-               }
-           }else {
-               Uri uri = getContentResolver().getPersistedUriPermissions().get(0).getUri();
-               sharedPreferences.edit().putString(GIVEN_SCOPE, uri.toString()).apply();
-               DocumentFile pickedDir = DocumentFile.fromTreeUri(this, uri);
-               if (pickedDir.exists()){
-                   DocumentFile folder = pickedDir.findFile(name);
-                   if (folder!=null && folder.exists()){
-                       sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
-                   }else {
-                       folder = pickedDir.createDirectory(name);
-                       sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
-                   }
-                   callbacks.onFolderAccessGranted(folder);
-               }else {
-                   requestName = name;
-                   this.callbacks = callbacks;
-                   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                       selectIfHavePermission();
-                   } else {
-                       Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                       startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
-                   }
-               }
-           }
-       }
+        if (checkStorage()){
+            DocumentFile folder = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(FOLDER_URI,"")));
+            if (folder!=null && folder.exists() && folder.getName().equals(name)){
+                callbacks.onFolderAccessGranted(folder);
+            }else {
+                DocumentFile main = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(GIVEN_SCOPE,"")));
+                if (main!=null && main.exists()){
+                    folder = main.createDirectory(name);
+                    callbacks.onFolderAccessGranted(folder);
+                }
+            }
+        }else {
+            if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
+                requestName = name;
+                this.callbacks = callbacks;
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    selectIfHavePermission();
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                    startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
+                }
+            }else {
+                Uri uri = getContentResolver().getPersistedUriPermissions().get(0).getUri();
+                sharedPreferences.edit().putString(GIVEN_SCOPE, uri.toString()).apply();
+                DocumentFile pickedDir = DocumentFile.fromTreeUri(this, uri);
+                if (pickedDir.exists()){
+                    DocumentFile folder = pickedDir.findFile(name);
+                    if (folder!=null && folder.exists()){
+                        sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
+                    }else {
+                        folder = pickedDir.createDirectory(name);
+                        sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
+                    }
+                    callbacks.onFolderAccessGranted(folder);
+                }else {
+                    requestName = name;
+                    this.callbacks = callbacks;
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        selectIfHavePermission();
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -165,5 +164,4 @@ public abstract class BaseActivity extends AppCompatActivity {
             selectIfHavePermission();
         }
     }
-
 }
