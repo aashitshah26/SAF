@@ -34,19 +34,21 @@ public class BaseActivity extends AppCompatActivity {
     StorageCallbacks callbacks;
     SharedPreferences sharedPreferences;
 
-    public interface StorageCallbacks{
+    public interface StorageCallbacks {
         void onFolderAccessGranted(DocumentFile folder);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPreferences = getSharedPreferences("MySharedPref",MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+
 
         permissionCallbacks = new EasyPermissions.PermissionCallbacks() {
             @Override
             public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-                selectIfHavePermission();
+                if (requestCode == STORAGE_PERMISSION)
+                    selectIfHavePermission(49);
             }
 
             @Override
@@ -67,50 +69,59 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    public boolean checkStorage(){
+    public boolean checkStorage() {
         return sharedPreferences.contains("FOLDER_URI");
     }
 
-    public void requestMainFolderAccess(String name,StorageCallbacks callbacks){
-        if (checkStorage()){
-            DocumentFile folder = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(FOLDER_URI,"")));
-            if (folder!=null && folder.exists() && folder.getName().equals(name)){
+    public void requestMainFolderAccess(String name, StorageCallbacks callbacks) {
+        if (checkStorage()) {
+            DocumentFile folder = DocumentFile.fromTreeUri(this, Uri.parse(sharedPreferences.getString(FOLDER_URI, "")));
+            Log.e("folder_", folder.getName());
+            if (folder != null && folder.exists() && folder.getName().equals(name)) {
                 callbacks.onFolderAccessGranted(folder);
-            }else {
-                DocumentFile main = DocumentFile.fromTreeUri(this,Uri.parse(sharedPreferences.getString(GIVEN_SCOPE,"")));
-                if (main!=null && main.exists()){
-                    folder = main.createDirectory(name);
+            } else {
+                DocumentFile main = DocumentFile.fromTreeUri(this, Uri.parse(sharedPreferences.getString(GIVEN_SCOPE, "")));
+                if (main != null && main.exists()) {
+                    folder = main.findFile(name);
+                    if (folder==null || !folder.exists()) {
+                        folder = main.createDirectory(name);
+                    }
+                    Log.e("folder", folder.getName());
                     callbacks.onFolderAccessGranted(folder);
                 }
             }
-        }else {
+        } else {
             if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
                 requestName = name;
                 this.callbacks = callbacks;
+                Log.e("folder_1", "here req");
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    selectIfHavePermission();
+                    selectIfHavePermission(94);
                 } else {
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                     startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
                 }
-            }else {
+            } else {
                 Uri uri = getContentResolver().getPersistedUriPermissions().get(0).getUri();
+                Log.e("folder_1", uri.toString() + "abc");
                 sharedPreferences.edit().putString(GIVEN_SCOPE, uri.toString()).apply();
                 DocumentFile pickedDir = DocumentFile.fromTreeUri(this, uri);
-                if (pickedDir.exists()){
+                if (pickedDir.exists()) {
                     DocumentFile folder = pickedDir.findFile(name);
-                    if (folder!=null && folder.exists()){
+                    if (folder != null && folder.exists()) {
+                        Log.e("folder__1", folder.getName());
                         sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
-                    }else {
+                    } else {
                         folder = pickedDir.createDirectory(name);
+                        Log.e("folder__2", folder.getName());
                         sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
                     }
                     callbacks.onFolderAccessGranted(folder);
-                }else {
+                } else {
                     requestName = name;
                     this.callbacks = callbacks;
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        selectIfHavePermission();
+                        selectIfHavePermission(117);
                     } else {
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
@@ -122,7 +133,8 @@ public class BaseActivity extends AppCompatActivity {
 
 
     @AfterPermissionGranted(STORAGE_PERMISSION)
-    private void selectIfHavePermission() {
+    private void selectIfHavePermission(int from) {
+        Log.e("from", "here " + from);
         if (EasyPermissions.hasPermissions(this, WRITE_EXTERNAL_STORAGE)) {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivityForResult(intent, REQUEST_CODE_PATH_TO_DATA);
@@ -154,14 +166,15 @@ public class BaseActivity extends AppCompatActivity {
             getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             sharedPreferences.edit().putString(GIVEN_SCOPE, data.getData().toString()).apply();
             DocumentFile folder = pickedDir.findFile(requestName);
-            if (folder==null || !folder.exists()){
+            if (folder == null || !folder.exists()) {
                 folder = pickedDir.createDirectory(requestName);
             }
-            sharedPreferences.edit().putString(FOLDER_URI,folder.getUri().toString()).apply();
+            Log.e("folder__3", folder.getName());
+            sharedPreferences.edit().putString(FOLDER_URI, folder.getUri().toString()).apply();
             callbacks.onFolderAccessGranted(folder);
 
         } else if (requestCode == AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE) {
-            selectIfHavePermission();
+            selectIfHavePermission(169);
         }
     }
 }
