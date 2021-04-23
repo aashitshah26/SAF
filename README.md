@@ -31,7 +31,7 @@ implementation 'com.github.aashitshah26:SAF:<latest-version>'
 
 Add *SAF* to your Code:
 
-Extend your activity with Base Activity like this:
+Extend your activity with BaseActivity like this:
 
 ```java
 public class MainActivity extends BaseActivity {
