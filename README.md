@@ -31,7 +31,7 @@ implementation 'com.github.aashitshah26:SAF:<latest-version>'
 
 Add *SAF* to your Code:
 
-Extend your activity with BaseActivity like this:
+Extend your activity with `BaseActivity` like this:
 
 ```java
 public class MainActivity extends BaseActivity {
@@ -39,7 +39,7 @@ public class MainActivity extends BaseActivity {
 }
 ```
 
-Change the storage permission in manifest to this:
+Change the storage permission in `Manifest` to this:
 
 ```xml
 <uses-permission
